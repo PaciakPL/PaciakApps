@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
+using App.MusicHole.Extensions;
+using Autofac;
 
 namespace App.MusicHole
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var builder = new ContainerBuilder();
+            await builder.RegisterIoC().Resolve<IStartup>().Run();
         }
     }
 }
