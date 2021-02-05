@@ -10,19 +10,19 @@ namespace DAL.Paciak
 {
     public class UserRepository : IUserRepository
     {
-        private readonly IDbProvider dbProvider;
+        private readonly IMongoDatabase db;
 
         private const string DbName = "forume";
         private const string ObjectsCollectionName = "objects";
 
         public UserRepository(IDbProvider dbProvider)
         {
-            this.dbProvider = dbProvider;
+            db = dbProvider.GetDatabase(DbName);
         }
 
         public async Task<IEnumerable<User>> GetUsersByUids(int[] uids)
         {
-            var objectsCollection = dbProvider.GetDatabase(DbName).GetCollection<BsonDocument>(ObjectsCollectionName);
+            var objectsCollection = db.GetCollection<BsonDocument>(ObjectsCollectionName);
 
             var usersByUidFilter = Builders<BsonDocument>.Filter.In("_key", uids.Select(x => $"user:{x}").ToArray());
             using var usersCollection = await objectsCollection.FindAsync<User>(usersByUidFilter);

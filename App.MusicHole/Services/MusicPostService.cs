@@ -11,36 +11,38 @@ namespace App.MusicHole.Services
     {
         private readonly IPostsRepository postsRepository;
         private readonly Regex youtubeRegex = new Regex(@"(http.+youtube[^\s\n\t$]+)", RegexOptions.Multiline);
+        private readonly Regex videoIdRegex = new Regex(@"v=([^$&]+)", RegexOptions.Multiline);
 
         public MusicPostService(IPostsRepository postsRepository)
         {
             this.postsRepository = postsRepository;
         }
 
-        public async Task<IEnumerable<string>> GetMusicUrlsFromTopic(string topicId)
+        public async Task<IEnumerable<string>> GetVideoIdsFromTopic(string topicId)
         {
             var posts = await postsRepository.GetTopicPosts(topicId);
             var urls = posts
                 .Select(p => p)
                 .OrderBy(p => p.Timestamp)
                 .SelectMany(p => ExtractUrlsFromPost(p.Content))
+                .Select(ExtractVideoId)
                 .Where(p => p != null)
                 .ToList();
 
             return urls;
         }
 
-        private List<string> ExtractUrlsFromPost(string content)
+        private IEnumerable<string> ExtractUrlsFromPost(string content)
         {
             var matches = youtubeRegex.Matches(content);
 
-            if (matches.Any())
-            {
-                Console.WriteLine(matches);
-                return matches.Select(p => p.Value).ToList();
-            }
+            return matches.Any() ? matches.Select(p => p.Value).ToList() : new List<string>();
+        }
 
-            return new List<string>();
+        private string ExtractVideoId(string url)
+        {
+            var matches = videoIdRegex.Matches(url);
+            return matches.Any() ? matches.FirstOrDefault()?.Groups[1].Value : null;
         }
     }
 }
