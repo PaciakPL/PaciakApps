@@ -10,17 +10,17 @@ namespace DAL.Paciak
 {
     public class PostsRepository : IPostsRepository
     {
-        private readonly IDbProvider dbProvider;
+        private readonly IMongoDatabase db;
         private const string DbName = "forume";
 
         public PostsRepository(IDbProvider dbProvider)
         {
-            this.dbProvider = dbProvider;
+            db = dbProvider.GetDatabase(DbName);
         }
 
         public async Task<IEnumerable<Post>> GetTopicPosts(string topicId)
         {
-            var objectsCollection = dbProvider.GetDatabase(DbName).GetCollection<BsonDocument>("objects");
+            var objectsCollection = db.GetCollection<BsonDocument>("objects");
 
             var postIdsFilter = Builders<BsonDocument>.Filter.Eq("_key", $"tid:{topicId}:posts");
             using var postIds = await objectsCollection.FindAsync<PostBare>(postIdsFilter);

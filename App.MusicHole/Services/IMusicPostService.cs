@@ -5,6 +5,6 @@ namespace App.MusicHole.Services
 {
     public interface IMusicPostService
     {
-        Task<IEnumerable<string>> GetMusicUrlsFromTopic(string topicId);
+        Task<IEnumerable<string>> GetVideoIdsFromTopic(string topicId);
     }
 }

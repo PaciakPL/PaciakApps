@@ -14,7 +14,9 @@ namespace App.MusicHole.Extensions
             builder.RegisterType<DbConfigurationProvider>().AsImplementedInterfaces();
             builder.RegisterType<DbProvider>().AsImplementedInterfaces();
             builder.RegisterType<PostsRepository>().AsImplementedInterfaces();
+            builder.RegisterType<SongRepository>().AsImplementedInterfaces();
             builder.RegisterType<MusicPostService>().AsImplementedInterfaces();
+            builder.RegisterType<SongService>().AsImplementedInterfaces();
 
             return builder.Build();
         }
