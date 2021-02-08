@@ -22,7 +22,7 @@ namespace DAL.Paciak
         public async Task<bool> Exists(Song song)
         {
             var songsCollection = GetSongsCollection();
-            var existsFilter = Builders<BsonDocument>.Filter.Eq("_id", song.VideoId);
+            var existsFilter = Builders<BsonDocument>.Filter.Eq(nameof(song.VideoId), song.VideoId);
             using var songs = await songsCollection.FindAsync<Song>(existsFilter);
             var result = await songs.AnyAsync();
 
@@ -36,12 +36,13 @@ namespace DAL.Paciak
             await songsCollection.InsertOneAsync(song.ToBsonDocument());
         }
 
-        public async Task<bool> UpdateSong(Song song)
+        public async Task<bool> Upsert(Song song)
         {
             var songsCollection = GetSongsCollection();
             var result = await songsCollection.UpdateOneAsync(
-                Builders<BsonDocument>.Filter.Eq("_id", song.VideoId),
-                Builders<BsonDocument>.Update.Set(nameof(Song.PlaylistId), song.PlaylistId));
+                Builders<BsonDocument>.Filter.Eq(nameof(Song.VideoId), song.VideoId),
+                new BsonDocument("$set", song.ToBsonDocument()),
+                new UpdateOptions() { IsUpsert = true});
 
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
