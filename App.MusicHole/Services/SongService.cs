@@ -16,14 +16,7 @@ namespace App.MusicHole.Services
 
         public async Task<bool> UpsertSong(Song song)
         {
-            if (await songRepository.Exists(song))
-            {
-                return false;
-            }
-            
-            await songRepository.AddSong(song);
-
-            return true;
+            return await songRepository.Upsert(song);
         }
 
         public IEnumerable<Song> GetOrphanedSongs()

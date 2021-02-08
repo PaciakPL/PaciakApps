@@ -2,13 +2,11 @@
 
 namespace DAL.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Song
     {
-        [BsonId]
-        [BsonElement("_id")]
         public string VideoId { get; set; }
 
-        [BsonElement("PlaylistId")]
         public string PlaylistId { get; set; }
     }
 }
