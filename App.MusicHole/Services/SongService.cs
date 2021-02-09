@@ -19,9 +19,9 @@ namespace App.MusicHole.Services
             return await songRepository.Upsert(song);
         }
 
-        public IEnumerable<Song> GetOrphanedSongs()
+        public async Task<IEnumerable<Song>> GetOrphanedSongs()
         {
-            throw new System.NotImplementedException();
+            return await songRepository.GetOrphanedSongs();
         }
     }
 }

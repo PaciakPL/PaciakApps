@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
+using DAL.Entities;
 using DAL.Paciak;
 
 namespace App.MusicHole.Services
@@ -10,8 +12,7 @@ namespace App.MusicHole.Services
     public class MusicPostService : IMusicPostService
     {
         private readonly IPostsRepository postsRepository;
-        private readonly Regex youtubeRegex = new Regex(@"(http.+youtube[^\s\n\t$]+)", RegexOptions.Multiline);
-        private readonly Regex videoIdRegex = new Regex(@"v=([^$&]+)", RegexOptions.Multiline);
+        private readonly Regex youtubeRegex = new Regex(@"(https?.+youtu\.?be[^\s\n\t$]+)", RegexOptions.Multiline);
 
         public MusicPostService(IPostsRepository postsRepository)
         {
@@ -21,15 +22,25 @@ namespace App.MusicHole.Services
         public async Task<IEnumerable<string>> GetVideoIdsFromTopic(string topicId)
         {
             var posts = await postsRepository.GetTopicPosts(topicId);
-            var urls = posts
-                .Select(p => p)
+
+            return GetUrlsFromPosts(posts.ToList());
+        }
+
+        public async Task<IEnumerable<string>> GetVideoIdsFromTopicByDateOffset(string topicId, DateTime offset)
+        {
+            var posts = await postsRepository.GetTopicPostsWithDateOffset(topicId, offset);
+
+            return GetUrlsFromPosts(posts.ToList());
+        }
+        
+        private IEnumerable<string> GetUrlsFromPosts(IEnumerable<Post> list)
+        {
+            return list.Select(p => p)
                 .OrderBy(p => p.Timestamp)
                 .SelectMany(p => ExtractUrlsFromPost(p.Content))
                 .Select(ExtractVideoId)
                 .Where(p => p != null)
                 .ToList();
-
-            return urls;
         }
 
         private IEnumerable<string> ExtractUrlsFromPost(string content)
@@ -41,8 +52,9 @@ namespace App.MusicHole.Services
 
         private string ExtractVideoId(string url)
         {
-            var matches = videoIdRegex.Matches(url);
-            return matches.Any() ? matches.FirstOrDefault()?.Groups[1].Value : null;
+            var uri = new Uri(url);
+            var queryDictionary = HttpUtility.ParseQueryString(uri.Query);
+            return queryDictionary.Get("v") ?? uri.Segments.LastOrDefault(); // assume v=videoId
         }
     }
 }
