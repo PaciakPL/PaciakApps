@@ -32,9 +32,12 @@ namespace App.MusicHole
         {
             var lastRun = await GetLastRun();
             var topicId = ConfigurationManager.AppSettings["musicTopicId"];
-            var videoIdsFromTopic = await musicPostService.GetVideoIdsFromTopic(topicId);
+            var videoIdsFromTopic = await musicPostService.GetVideoIdsFromTopicByDateOffset(topicId, lastRun);
+            var uniqueVideoIds = videoIdsFromTopic.ToList().Select(v => v).Distinct().ToList();
             
-            foreach (var videoId in videoIdsFromTopic)
+            Console.WriteLine($"Found {uniqueVideoIds.Count} unique music videos from last run at {lastRun.ToString(CultureInfo.InvariantCulture)}");
+            
+            foreach (var videoId in uniqueVideoIds)
             {
                 Console.WriteLine($"Processing {videoId}");
                 await songService.UpsertSong(new Song()
@@ -43,8 +46,16 @@ namespace App.MusicHole
                 });
             }
 
-            await UpdateLastRun();
-            Console.WriteLine("Songs added");
+            Console.WriteLine("Songs added, searching for songs not assigned to playlist");
+
+            var orphanSongs = (await songService.GetOrphanedSongs()).ToList();
+            int.TryParse(ConfigurationManager.AppSettings["maxBatchSize"], out var maxBatchSize);
+            
+            Console.WriteLine($"Songs without playlist {orphanSongs.Count}\nProcessing batch of max {maxBatchSize} songs");
+            
+            Console.Write("Updating last run date ");
+            var lastRunSaved = await UpdateLastRun();
+            Console.WriteLine($"{lastRunSaved}\nFinish");
         }
 
         private async Task<DateTime> GetLastRun()
@@ -59,13 +70,16 @@ namespace App.MusicHole
             return DateTime.TryParse(lastRunValue.Value, out var lastRunDate) ? lastRunDate : initial;
         }
         
-        private async Task UpdateLastRun()
+        private async Task<string> UpdateLastRun()
         {
+            var date = DateTime.Now.ToString(CultureInfo.InvariantCulture);
             await settingsService.Upsert(new Option()
             {
                 Name = LastRunSettingName,
-                Value = DateTime.Now.ToString(CultureInfo.InvariantCulture)
+                Value = date
             });
+
+            return date;
         }
     }
 }
