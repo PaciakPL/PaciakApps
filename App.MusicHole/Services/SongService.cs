@@ -19,6 +19,11 @@ namespace App.MusicHole.Services
             return await songRepository.Upsert(song);
         }
 
+        public async Task<bool> Delete(Song song)
+        {
+            return await songRepository.Delete(song);
+        }
+
         public async Task<IEnumerable<Song>> GetOrphanedSongs()
         {
             return await songRepository.GetOrphanedSongs();
