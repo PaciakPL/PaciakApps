@@ -8,11 +8,14 @@ using Common.Services;
 using DAL.Entities;
 using DAL.Paciak;
 using Google;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace App.MusicHole
 {
     public class Startup : IStartup
     {
+        private readonly ILogger<Startup> logger;
         private readonly IMusicPostService musicPostService;
         private readonly ISongService songService;
         private readonly ISettingsService settingsService;
@@ -21,11 +24,13 @@ namespace App.MusicHole
         private const string LastRunSettingName = "lastRun";
 
         public Startup(
+            ILogger<Startup> logger,
             IMusicPostService musicPostService,
             ISongService songService,
             ISettingsService settingsService,
             IYoutubePlaylistService youtubePlaylistService)
         {
+            this.logger = logger;
             this.musicPostService = musicPostService;
             this.songService = songService;
             this.settingsService = settingsService;
@@ -39,24 +44,24 @@ namespace App.MusicHole
             var videoIdsFromTopic = await musicPostService.GetVideoIdsFromTopicByDateOffset(topicId, lastRun);
             var uniqueVideoIds = videoIdsFromTopic.ToList().Select(v => v).Distinct().ToList();
             
-            Console.WriteLine($"Found {uniqueVideoIds.Count} unique music videos from last run at {lastRun.ToString(CultureInfo.InvariantCulture)}");
+            logger.LogInformation($"Found {uniqueVideoIds.Count} unique music videos from last run at {lastRun.ToString(CultureInfo.InvariantCulture)}");
             
             foreach (var videoId in uniqueVideoIds)
             {
-                Console.WriteLine($"Processing {videoId}");
+                logger.LogDebug($"Processing {videoId}");
                 await songService.UpsertSong(new Song()
                 {
                     VideoId = videoId
                 });
             }
 
-            Console.WriteLine("Songs added, searching for songs not assigned to playlist");
+            logger.LogInformation("Searching for songs not assigned to playlist");
 
             var orphanSongs = (await songService.GetOrphanedSongs()).ToList();
             int.TryParse(ConfigurationManager.AppSettings["maxBatchSize"], out var maxBatchSize);
             
-            Console.WriteLine($"Songs without playlist {orphanSongs.Count}\nProcessing batch of max {maxBatchSize} songs");
-
+            logger.LogInformation($"Found {orphanSongs.Count} songs without playlist");
+            logger.LogDebug($"Processing batch of max {maxBatchSize} songs");
             
             if (orphanSongs.Count > 0)
             {
@@ -64,14 +69,13 @@ namespace App.MusicHole
                 var songs = orphanSongs.Select(s => s).Take(maxBatchSize).ToList();
                 foreach (var song in songs)
                 {
-                    Console.Write($"Adding ${song.VideoId} to {playlistId}....");
-                    var result = false;
+                    logger.LogInformation($"Adding {song.VideoId} to {playlistId}....");
                     try
                     {
-                        result = await youtubePlaylistService.InsertVideoToPlaylist(song.VideoId, playlistId);
+                        var result = await youtubePlaylistService.InsertVideoToPlaylist(song.VideoId, playlistId);
                         if (result)
                         {
-                            Console.Write("OK, updating db\n");
+                            logger.LogDebug("Added, updating db");
                             await songService.UpsertSong(new Song()
                             {
                                 VideoId = song.VideoId,
@@ -80,17 +84,17 @@ namespace App.MusicHole
                         }
                         else
                         {
-                            Console.Write("ERR Unknown\n");
+                            logger.LogError("Unknown error");
                         }
                     }
                     catch (GoogleApiException exception)
                     {
-                        Console.WriteLine($"ERR {exception.Error.Message}");
+                        logger.LogError($"Error while adding {song.VideoId}, reason {exception.Error.Message}");
                         if (exception.Error.Code == 404)
                         {
-                            Console.Write("Deleting missing song...");
+                            logger.LogDebug("Deleting missing song");
                             var deleteResult = await songService.Delete(song);
-                            Console.WriteLine($"{(deleteResult ? "OK" : "ERR")}\n");
+                            logger.LogTrace($"{(deleteResult ? "Deleted" : "Error while deleting song")}");
                         }
                     }
                     
@@ -98,9 +102,9 @@ namespace App.MusicHole
                 }
             }
 
-            Console.Write("Updating last run date ");
+            logger.LogDebug("Updating last run date ");
             var lastRunSaved = await UpdateLastRun();
-            Console.WriteLine($"{lastRunSaved}\nFinish");                
+            logger.LogInformation($"Finished at {lastRunSaved}");                
         }
 
         private async Task<DateTime> GetLastRun()

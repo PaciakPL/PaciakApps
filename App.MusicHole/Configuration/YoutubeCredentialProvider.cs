@@ -11,8 +11,13 @@ namespace App.MusicHole.Configuration
     {
         public async Task<UserCredential> GetCredential()
         {
-            await using var stream = new FileStream(ConfigurationManager.AppSettings["googleSecretFile"], FileMode.Open,
-                FileAccess.Read);
+            await using var stream = new MemoryStream();
+            await using var streamWriter = new StreamWriter(stream);
+
+            await streamWriter.WriteAsync(ConfigurationManager.AppSettings["googleOathSecret"]);
+            await streamWriter.FlushAsync();
+            stream.Position = 0;
+            
             return await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 GoogleClientSecrets.Load(stream).Secrets,
                 new[] {YouTubeService.Scope.Youtube},

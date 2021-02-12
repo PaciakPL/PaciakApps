@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Threading.Tasks;
 using App.MusicHole.Configuration;
 using Google.Apis.Services;
@@ -19,7 +20,7 @@ namespace App.MusicHole.Services
             return new(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = await credentialProvider.GetCredential(),
-                ApplicationName = this.GetType().ToString()
+                ApplicationName = ConfigurationManager.AppSettings["applicationName"]
             });
         }
     }
