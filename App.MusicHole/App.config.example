@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <connectionStrings>
+    </connectionStrings>
+    <appSettings>
+        <add key="applicationName" value="App.MusicHole"/>
+        <add key="dbName" value=""/>
+        <add key="youtubeChannelId" value=""/>
+        <add key="youtubePlaylistId" value=""/>
+        <add key="maxBatchSize" value="150"/>
+        <add key="musicTopicId" value=""/>
+        <add key="googleOathSecret" value=''/>
+        <add key="serilog:minimum-level" value="Information"/>
+        <add key="serilog:using:Console" value="Serilog.Sinks.Console"/>
+        <add key="serilog:write-to:Console.theme" value="Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Code, Serilog.Sinks.Console" />
+        <add key="serilog:using:File" value="Serilog.Sinks.File"/>
+        <add key="serilog:write-to:File.path" value="logs/logs.txt"/>
+        <add key="serilog:write-to:File.rollingInterval" value="Day"/>
+    </appSettings>
+</configuration>

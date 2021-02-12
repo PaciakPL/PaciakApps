@@ -5,6 +5,8 @@ using Autofac;
 using Common.Services;
 using DAL.Configuration;
 using DAL.Paciak;
+using Serilog;
+using Serilog.Extensions.Autofac.DependencyInjection;
 
 namespace App.MusicHole.Extensions
 {
@@ -12,6 +14,9 @@ namespace App.MusicHole.Extensions
     {
         public static IContainer RegisterIoC(this ContainerBuilder builder)
         {
+            var loggerConfiguration = new LoggerConfiguration().ReadFrom.AppSettings();
+            builder.RegisterSerilog(loggerConfiguration);
+            
             builder.RegisterType<Startup>().AsImplementedInterfaces();
 
             builder.RegisterType<DbConfigurationProvider>().AsImplementedInterfaces();

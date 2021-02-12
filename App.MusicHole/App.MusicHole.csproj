@@ -9,6 +9,11 @@
       <PackageReference Include="Autofac" Version="6.1.0" />
       <PackageReference Include="Google.Apis.YouTube.v3" Version="1.50.0.2232" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+      <PackageReference Include="Serilog" Version="2.10.1-dev-01285" />
+      <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="4.0.0" />
+      <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.3-dev-00066" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0-dev-00909" />
     </ItemGroup>
 
     <ItemGroup>
@@ -18,9 +23,6 @@
 
     <ItemGroup>
       <None Update="App.config">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="client_secret.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
