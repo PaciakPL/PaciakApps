@@ -47,6 +47,15 @@ namespace DAL.Paciak
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
+        public async Task<bool> Delete(Song song)
+        {
+            var songCollection = GetSongsCollection();
+            var result =
+                await songCollection.DeleteOneAsync(
+                    Builders<BsonDocument>.Filter.Eq(nameof(Song.VideoId), song.VideoId));
+            return result.DeletedCount > 0;
+        }
+
         public async Task<IEnumerable<Song>> GetOrphanedSongs()
         {
             var songsCollection = GetSongsCollection();

@@ -7,6 +7,7 @@ using App.MusicHole.Services;
 using Common.Services;
 using DAL.Entities;
 using DAL.Paciak;
+using Google;
 
 namespace App.MusicHole
 {
@@ -15,17 +16,20 @@ namespace App.MusicHole
         private readonly IMusicPostService musicPostService;
         private readonly ISongService songService;
         private readonly ISettingsService settingsService;
-        
+        private readonly IYoutubePlaylistService youtubePlaylistService;
+
         private const string LastRunSettingName = "lastRun";
 
         public Startup(
             IMusicPostService musicPostService,
             ISongService songService,
-            ISettingsService settingsService)
+            ISettingsService settingsService,
+            IYoutubePlaylistService youtubePlaylistService)
         {
             this.musicPostService = musicPostService;
             this.songService = songService;
             this.settingsService = settingsService;
+            this.youtubePlaylistService = youtubePlaylistService;
         }
 
         public async Task Run()
@@ -52,10 +56,51 @@ namespace App.MusicHole
             int.TryParse(ConfigurationManager.AppSettings["maxBatchSize"], out var maxBatchSize);
             
             Console.WriteLine($"Songs without playlist {orphanSongs.Count}\nProcessing batch of max {maxBatchSize} songs");
+
             
+            if (orphanSongs.Count > 0)
+            {
+                var playlistId = ConfigurationManager.AppSettings["youtubePlaylistId"];
+                var songs = orphanSongs.Select(s => s).Take(maxBatchSize).ToList();
+                foreach (var song in songs)
+                {
+                    Console.Write($"Adding ${song.VideoId} to {playlistId}....");
+                    var result = false;
+                    try
+                    {
+                        result = await youtubePlaylistService.InsertVideoToPlaylist(song.VideoId, playlistId);
+                        if (result)
+                        {
+                            Console.Write("OK, updating db\n");
+                            await songService.UpsertSong(new Song()
+                            {
+                                VideoId = song.VideoId,
+                                PlaylistId = playlistId
+                            });
+                        }
+                        else
+                        {
+                            Console.Write("ERR Unknown\n");
+                        }
+                    }
+                    catch (GoogleApiException exception)
+                    {
+                        Console.WriteLine($"ERR {exception.Error.Message}");
+                        if (exception.Error.Code == 404)
+                        {
+                            Console.Write("Deleting missing song...");
+                            var deleteResult = await songService.Delete(song);
+                            Console.WriteLine($"{(deleteResult ? "OK" : "ERR")}\n");
+                        }
+                    }
+                    
+                    
+                }
+            }
+
             Console.Write("Updating last run date ");
             var lastRunSaved = await UpdateLastRun();
-            Console.WriteLine($"{lastRunSaved}\nFinish");
+            Console.WriteLine($"{lastRunSaved}\nFinish");                
         }
 
         private async Task<DateTime> GetLastRun()

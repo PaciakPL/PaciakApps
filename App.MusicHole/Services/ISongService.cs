@@ -7,6 +7,7 @@ namespace App.MusicHole.Services
     public interface ISongService
     {
         Task<bool> UpsertSong(Song song);
+        Task<bool> Delete(Song song);
         Task<IEnumerable<Song>> GetOrphanedSongs();
     }
 }

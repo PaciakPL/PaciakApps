@@ -10,6 +10,7 @@ namespace DAL.Paciak
         Task<bool> Exists(Song song);
         Task AddSong(Song song);
         Task<bool> Upsert(Song song);
+        Task<bool> Delete(Song song);
         Task<IEnumerable<Song>> GetOrphanedSongs();
     }
 }
