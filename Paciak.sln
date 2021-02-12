@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{A0581DC2-0112-464C-B5D6-FD0AE4BF4EE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.MusicHole.Docker", "App.MusicHole.Docker\App.MusicHole.Docker.csproj", "{E387BE13-C68D-42A9-9F20-3F11DBC0B812}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,7 @@ Global
 		{A0581DC2-0112-464C-B5D6-FD0AE4BF4EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0581DC2-0112-464C-B5D6-FD0AE4BF4EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0581DC2-0112-464C-B5D6-FD0AE4BF4EE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E387BE13-C68D-42A9-9F20-3F11DBC0B812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E387BE13-C68D-42A9-9F20-3F11DBC0B812}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

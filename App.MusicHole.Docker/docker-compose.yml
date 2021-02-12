@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  musichole:
+    image: music-hole:1.0.1
+    network_mode: host
+    build:
+      context: ../
+      dockerfile: App.MusicHole.Docker/Dockerfile
+    volumes:
+      - /var/logs/musichole:/opt/musichole/logs
