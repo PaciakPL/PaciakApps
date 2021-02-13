@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  musichole:
+    image: music-hole:1.1.1
+    container_name: music-hole
+    network_mode: host
+    stdin_open: true
+    tty: true
+    build:
+      context: ../
+      dockerfile: App.MusicHole.Docker/Dockerfile
+    volumes:
+      - C:/Temp/musichole-logs:/opt/musichole/logs

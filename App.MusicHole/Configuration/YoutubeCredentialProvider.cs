@@ -17,12 +17,17 @@ namespace App.MusicHole.Configuration
             await streamWriter.WriteAsync(ConfigurationManager.AppSettings["googleOathSecret"]);
             await streamWriter.FlushAsync();
             stream.Position = 0;
+
+            var scopes = new[] {YouTubeService.Scope.Youtube};
+            var secrets = GoogleClientSecrets.Load(stream).Secrets;
             
             return await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.Load(stream).Secrets,
-                new[] {YouTubeService.Scope.Youtube},
+                secrets,
+                scopes,
                 "user",
-                CancellationToken.None
+                CancellationToken.None,
+                null,
+                new PromptCodeReceiver()
             );
         }
     }
