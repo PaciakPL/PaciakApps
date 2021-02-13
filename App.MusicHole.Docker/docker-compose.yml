@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  musichole:
+    image: music-hole:latest
+    network_mode: host
+    stdin_open: true
+    tty: true
+    volumes:
+      - /var/logs/musichole:/opt/musichole/logs
